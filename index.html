@@ -237,6 +237,7 @@ textarea.inp{min-height:110px;resize:vertical;line-height:1.5}
 .onb .campo{padding:0;border:0;margin:0 0 18px}
 .onb .btn{margin-top:8px}
 .onb .link{display:block;margin:10px auto 0}
+.onb .msg{font-size:15px;margin:12px 0 0}
 
 .toast{position:fixed;left:50%;bottom:calc(var(--nav-h) + 26px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);z-index:70;background:var(--ink);color:var(--bg);padding:12px 18px;border-radius:12px;font-weight:600;font-size:15px;max-width:calc(100% - 40px);text-align:center}
 
@@ -287,7 +288,7 @@ textarea.inp{min-height:110px;resize:vertical;line-height:1.5}
    ============================================================ */
 const CONFIG = {
   // Paso 2: pegá entre las comillas el link de pago de la suscripción en Hotmart.
-  linkDePago: "PEGAR-LINK-DE-PAGO-DE-HOTMART",
+  linkDePago: "https://pay.hotmart.com/G107905272O",
   // Paso 3: pegá entre las comillas la URL de la planilla (la que termina en /exec).
   verifyEndpoint: "PEGAR-URL-DE-LA-PLANILLA",
   // Año en que arranca el ciclo de 5 años (2026 = año 1).
@@ -765,11 +766,15 @@ function cerrarSOS(){ clearTimeout(sosT); const o = $('#sos'); o.hidden = true; 
 function onb(paso){
   const o = $('#onb'); o.hidden = false;
   if (paso === 1) o.innerHTML = '<div class="onb-in"><div class="onb-orbe" aria-hidden="true"></div><h1>Comer con calma</h1><p>Un lugar para entender por qué a veces comés sin hambre, y responderle con calma en lugar de culpa.</p><button class="btn ancho" data-act="onb" data-paso="2">Empezar</button></div>';
-  if (paso === 2) {
+  if (paso === 2) o.innerHTML = '<div class="onb-in"><h1>¿Ya te suscribiste?</h1><p>Si ya pagaste tu suscripción, ingresá el correo con el que compraste y empezás con todo el contenido.</p>'
+    + '<div class="campo"><label for="o-email" style="font-weight:600;display:block;margin-bottom:8px">Tu correo</label><input class="inp" id="o-email" type="email" inputmode="email" autocomplete="email" placeholder="nombre@correo.com"></div>'
+    + '<button class="btn ancho" data-act="onb-validar">Activar mi suscripción</button><p class="msg" id="o-msg" aria-live="polite"></p>'
+    + '<button class="btn sec ancho" style="margin-top:14px" data-act="onb" data-paso="3">Quiero probarla gratis</button></div>';
+  if (paso === 3) {
     if (!S.pais) S.pais = detectarPais();
-    o.innerHTML = '<div class="onb-in"><h1>¿Desde qué país usás la app?</h1><p>Lo usamos para mostrarte las fechas especiales en el día que corresponde, como el Día de la Madre. Lo podés cambiar cuando quieras.</p><div class="campo"><select class="sel" id="o-pais" aria-label="Tu país">' + PAISES.map(p => '<option value="' + p[0] + '"' + (S.pais === p[0] ? ' selected' : '') + '>' + p[1] + '</option>').join('') + '</select></div><button class="btn ancho" data-act="onb" data-paso="3">Confirmar</button></div>';
+    o.innerHTML = '<div class="onb-in"><h1>¿Desde qué país usás la app?</h1><p>Lo usamos para mostrarte las fechas especiales en el día que corresponde, como el Día de la Madre. Lo podés cambiar cuando quieras.</p><div class="campo"><select class="sel" id="o-pais" aria-label="Tu país">' + PAISES.map(p => '<option value="' + p[0] + '"' + (S.pais === p[0] ? ' selected' : '') + '>' + p[1] + '</option>').join('') + '</select></div><button class="btn ancho" data-act="onb" data-paso="4">Confirmar</button></div>';
   }
-  if (paso === 3) o.innerHTML = '<div class="onb-in"><h1>Dos datos opcionales</h1><p>Si los completás, la app te acompaña en tu cumpleaños y en tus vacaciones. Si no, no pasa nada.</p>'
+  if (paso === 4) o.innerHTML = '<div class="onb-in"><h1>Dos datos opcionales</h1><p>Si los completás, la app te acompaña en tu cumpleaños y en tus vacaciones. Si no, no pasa nada.</p>'
     + '<div class="campo"><span class="lbl" style="font-weight:600;display:block;margin-bottom:8px">Tu cumpleaños, sin el año</span><div class="fila2"><select class="sel" id="o-cd" aria-label="Día">' + opcionesDia() + '</select><select class="sel" id="o-cm" aria-label="Mes">' + opcionesMes(null, 'Mes') + '</select></div></div>'
     + '<div class="campo"><label for="o-vac" style="font-weight:600;display:block;margin-bottom:8px">El mes en que te tomás vacaciones</label><select class="sel" id="o-vac">' + opcionesMes(null, 'No sé o depende del año') + '</select></div>'
     + '<button class="btn ancho" data-act="onb-fin" data-guardar="1">Guardar y entrar</button><button class="link" data-act="onb-fin">Saltar por ahora</button></div>';
@@ -833,8 +838,23 @@ document.addEventListener('click', async e => {
       else abrirHoja('<h2>Instalar en iPhone</h2><p>Abrí esta página en Safari, tocá el botón Compartir (el cuadrado con la flecha hacia arriba) y elegí "Agregar a inicio".</p><div class="hoja-acc"><button class="btn" data-act="cerrar">Entendido</button></div>');
       break;
     case 'onb':
-      if (el.dataset.paso === '3') { S.pais = $('#o-pais').value; guardar(); }
+      if (el.dataset.paso === '4') { S.pais = $('#o-pais').value; guardar(); }
       onb(+el.dataset.paso); break;
+    case 'onb-validar': {
+      const email = ($('#o-email').value || '').trim().toLowerCase(), msg = $('#o-msg');
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { msg.className = 'msg err'; msg.textContent = 'Revisá el correo: parece que falta algo.'; return; }
+      el.disabled = true; msg.className = 'msg'; msg.textContent = 'Revisando tu suscripción…';
+      try {
+        const ok = await verificar(email);
+        S.premium = {email, ok, verificado:Date.now()}; guardar();
+        if (ok) { toast('Listo, tu acceso está activo'); onb(3); return; }
+        msg.className = 'msg err'; msg.textContent = 'No encontramos una suscripción activa con ese correo. Revisá que sea el mismo con el que pagaste. Si pagaste hace unos minutos, esperá un momento y probá de nuevo.';
+      } catch(err) {
+        msg.className = 'msg err';
+        msg.textContent = err.message === 'sin-config' ? 'La validación de suscripciones todavía no está conectada.' : 'No pudimos revisar tu suscripción. Fijate que tengas internet y probá de nuevo.';
+      }
+      el.disabled = false; break;
+    }
     case 'onb-fin': {
       if (el.dataset.guardar) {
         const d = +$('#o-cd').value, m = +$('#o-cm').value, v = +$('#o-vac').value;
