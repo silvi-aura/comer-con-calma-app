@@ -1,6 +1,6 @@
 /* Guarda la app en el celular para que abra rápido y funcione sin internet.
-   Si cambiás algún archivo, subí el número de versión (v3 → v4) para que se actualice. */
-const VERSION = 'comer-con-calma-v3';
+   Si cambiás algún archivo, subí el número de versión (v4 → v5) para que se actualice. */
+const VERSION = 'comer-con-calma-v4';
 const ARCHIVOS = ['./', './index.html', './contenido.js', './manifest.json', './icon-192.png', './icon-512.png', './apple-touch-icon.png'];
 
 self.addEventListener('install', e => {
