@@ -5,8 +5,13 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Comer con calma</title>
 <meta name="description" content="Entendé por qué a veces comés sin hambre y respondele con calma en lugar de culpa.">
-<meta name="theme-color" content="#EDF2EF" media="(prefers-color-scheme: light)">
-<meta name="theme-color" content="#121D1B" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" id="meta-tema" content="#EDF2EF">
+<script>
+/* Aplica el modo claro u oscuro antes de mostrar la pantalla, para que no parpadee. */
+(function(){var t="auto";try{t=(JSON.parse(localStorage.getItem("comerConCalma_v1")||"{}").tema)||"auto";}catch(e){}
+var o=t==="oscuro"||(t==="auto"&&window.matchMedia&&matchMedia("(prefers-color-scheme: dark)").matches);
+if(o){document.documentElement.classList.add("oscuro");document.getElementById("meta-tema").setAttribute("content","#121D1B");}})();
+</script>
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Comer con calma">
@@ -27,13 +32,11 @@
   --nav-h:66px;
   color-scheme:light;
 }
-@media (prefers-color-scheme:dark){
-  :root{
+html.oscuro{
     --bg:#121D1B; --surface:#1A2826; --ink:#E6EEEB; --soft:#9FB2AD; --line:#2A3B38;
     --eu:#7FB8AC; --eu-tint:#203A35; --eu-ink:#0F1C1A;
     --miel:#E8B04F; --miel-tint:#3A2E17; --miel-ink:#2A1D05;
     color-scheme:dark;
-  }
 }
 *{box-sizing:border-box}
 html{-webkit-text-size-adjust:100%}
@@ -50,7 +53,7 @@ button{font:inherit;color:inherit;cursor:pointer}
 .marca{font:600 18px/1.2 var(--serif);color:var(--ink);text-decoration:none;letter-spacing:-.01em}
 .corona{text-decoration:none;display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:6px 12px 6px 10px;font:600 14px var(--sans);color:var(--soft)}
 .corona.activa{border-color:transparent;background:var(--miel-tint);color:var(--miel-ink)}
-@media (prefers-color-scheme:dark){.corona.activa{color:var(--miel)}}
+html.oscuro .corona.activa{color:var(--miel)}
 
 /* Contenido */
 main{max-width:560px;margin:0 auto;padding:6px 20px calc(var(--nav-h) + 48px + env(safe-area-inset-bottom,0px))}
@@ -143,7 +146,7 @@ h3{font:600 19px/1.3 var(--serif);margin:0 0 4px}
 .entrada .en-h{display:flex;gap:8px;align-items:center;font-size:14px;color:var(--soft);margin-bottom:4px}
 .entrada .en-tipo{font-weight:600;color:var(--eu)}
 .entrada .en-tipo.antojo{color:var(--miel-ink)}
-@media (prefers-color-scheme:dark){.entrada .en-tipo.antojo{color:var(--miel)}}
+html.oscuro .entrada .en-tipo.antojo{color:var(--miel)}
 .entrada .en-tx{font-size:16px;overflow:hidden;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical}
 .chips-mini{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
 .chips-mini span{font-size:13px;padding:3px 10px;border-radius:999px;background:var(--miel-tint)}
@@ -170,6 +173,9 @@ h3{font:600 19px/1.3 var(--serif);margin:0 0 4px}
 .campo .ayuda{font-size:14px;color:var(--soft);margin:8px 0 0}
 .fila2{display:grid;grid-template-columns:1fr 1.4fr;gap:10px}
 .aviso{font-size:14px;color:var(--soft);margin:18px 4px 0}
+.segmento{display:grid;grid-template-columns:repeat(3,1fr);gap:4px;padding:4px;border-radius:14px;background:var(--bg);border:1px solid var(--line)}
+.segmento button{min-height:44px;border:0;border-radius:10px;background:transparent;color:var(--soft);font:600 15px var(--sans)}
+.segmento button[aria-pressed="true"]{background:var(--eu);color:var(--eu-ink)}
 
 /* Suscripción */
 .incluye{margin:0 0 20px;padding-left:22px}
@@ -181,7 +187,7 @@ h3{font:600 19px/1.3 var(--serif);margin:0 0 4px}
 .msg{margin:12px 0 0;font-size:15px}
 .msg.ok{color:var(--eu);font-weight:600}
 .msg.err{color:#B4462F}
-@media (prefers-color-scheme:dark){.msg.err{color:#F0937D}}
+html.oscuro .msg.err{color:#F0937D}
 
 .pie{margin:34px 0 0;padding-top:16px;border-top:1px solid var(--line);font-size:15px}
 
@@ -316,7 +322,7 @@ const ICON = {
 
 /* ---------- Datos guardados en el celular ---------- */
 const CLAVE = 'comerConCalma_v1';
-function base(){ return {inicio:null, pais:null, cumple:null, vacaciones:null, listo:false, diario:[], checks:{}, premium:null}; }
+function base(){ return {inicio:null, pais:null, cumple:null, vacaciones:null, listo:false, diario:[], checks:{}, premium:null, tema:'auto'}; }
 function cargar(){ try { return Object.assign(base(), JSON.parse(localStorage.getItem(CLAVE) || '{}')); } catch(e){ return base(); } }
 let S = cargar();
 function guardar(){ try { localStorage.setItem(CLAVE, JSON.stringify(S)); } catch(e){} }
@@ -640,7 +646,11 @@ let promptInstalar = null;
 const esIOS = () => /iphone|ipad|ipod/i.test(navigator.userAgent);
 const instalada = () => window.matchMedia('(display-mode: standalone)').matches || navigator.standalone === true;
 function pantallaMas(){
-  let h = '<h1>Más</h1><p class="sec-t">Tus datos</p><div class="grupo">' + camposDatos() + '</div>';
+  const temaAct = S.tema || 'auto';
+  let h = '<h1>Más</h1><p class="sec-t">Apariencia</p><div class="grupo"><div class="campo"><span class="lbl">Modo de la pantalla</span><div class="segmento" role="group" aria-label="Modo de la pantalla">'
+    + [['auto','Automático'],['claro','Claro'],['oscuro','Oscuro']].map(o => '<button type="button" data-act="tema" data-v="' + o[0] + '" aria-pressed="' + (temaAct === o[0]) + '">' + o[1] + '</button>').join('')
+    + '</div><p class="ayuda">Automático usa el mismo modo que tu celular.</p></div></div>';
+  h += '<p class="sec-t">Tus datos</p><div class="grupo">' + camposDatos() + '</div>';
   h += '<div class="grupo">'
     + '<a class="item" href="#/premium"><span>Tu suscripción<small>' + (esPremium() ? 'Activa con ' + esc(S.premium.email) : 'Ver qué incluye y validar tu correo') + '</small></span>' + ICON.chev + '</a>'
     + '<a class="item" href="#/empeza"><span>Empezá acá</span>' + ICON.chev + '</a>'
@@ -832,6 +842,7 @@ document.addEventListener('click', async e => {
       el.disabled = false; break;
     }
     case 'otro-correo': S.premium = null; guardar(); render(); break;
+    case 'tema': S.tema = el.dataset.v; guardar(); aplicarTema(); render(); break;
     case 'descargar': descargarDiario(); break;
     case 'instalar':
       if (promptInstalar) { promptInstalar.prompt(); promptInstalar = null; }
@@ -903,6 +914,14 @@ window.addEventListener('beforeinstallprompt', e => { e.preventDefault(); prompt
 if ('serviceWorker' in navigator) window.addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {}));
 
 /* ---------- Arranque ---------- */
+const mqOscuro = window.matchMedia('(prefers-color-scheme: dark)');
+function aplicarTema(){
+  const t = S.tema || 'auto', osc = t === 'oscuro' || (t === 'auto' && mqOscuro.matches);
+  document.documentElement.classList.toggle('oscuro', osc);
+  $('#meta-tema').setAttribute('content', osc ? '#121D1B' : '#EDF2EF');
+}
+if (mqOscuro.addEventListener) mqOscuro.addEventListener('change', aplicarTema); else if (mqOscuro.addListener) mqOscuro.addListener(aplicarTema);
+aplicarTema();
 render();
 if (!S.listo) onb(1); else revalidar();
 </script>
