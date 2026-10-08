@@ -261,10 +261,7 @@ textarea.inp{min-height:110px;resize:vertical;line-height:1.5}
 <header class="top">
   <div class="top-in">
     <a class="marca" href="#/hoy">Comer con calma</a>
-    <a class="corona" id="corona" href="#/premium" aria-label="Tu suscripción">
-      <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" aria-hidden="true"><path d="M3 8l4.5 4L12 5l4.5 7L21 8l-2 11H5L3 8z"/></svg>
-      <span id="corona-tx">Premium</span>
-    </a>
+    
   </div>
 </header>
 
@@ -439,10 +436,7 @@ function fechasDeHoy(){
 function esCumpleHoy(){ const c = fechaCumple(hoy().getFullYear()); return c && ymd(c) === ymd(hoy()); }
 
 /* ---------- Suscripción ---------- */
-function esPremium(){
-  const p = S.premium;
-  return !!(p && p.ok && (Date.now() - p.verificado) < 10 * 864e5);
-}
+function esPremium(){ return true; } /* pago único: todo incluido */
 async function verificar(email){
   if (!configurado(CONFIG.verifyEndpoint)) throw new Error('sin-config');
   const r = await fetch(CONFIG.verifyEndpoint + '?email=' + encodeURIComponent(email.trim().toLowerCase()), {cache:'no-store'});
@@ -460,11 +454,7 @@ async function revalidar(){
     guardar(); render();
   } catch(e) {}
 }
-function corona(){
-  const a = $('#corona'), on = esPremium();
-  a.classList.toggle('activa', on);
-  $('#corona-tx').textContent = on ? 'Activa' : 'Premium';
-}
+function corona(){}
 
 /* ---------- Piezas comunes ---------- */
 function pie(){ return '<footer class="pie"><a href="#/ayuda">Cuándo pedir ayuda profesional</a></footer>'; }
@@ -665,7 +655,7 @@ function pantallaMas(){
     + '</div><p class="ayuda">Automático usa el mismo modo que tu celular.</p></div></div>';
   h += '<p class="sec-t">Tus datos</p><div class="grupo">' + camposDatos() + '</div>';
   h += '<div class="grupo">'
-    + '<a class="item" href="#/premium"><span>Tu suscripción<small>' + (esPremium() ? 'Activa con ' + esc(S.premium.email) : 'Ver qué incluye y validar tu correo') + '</small></span>' + ICON.chev + '</a>'
+    + ''
     + '<a class="item" href="#/empeza"><span>Empezá acá</span>' + ICON.chev + '</a>'
     + '<a class="item" href="#/ayuda"><span>Cuándo pedir ayuda profesional</span>' + ICON.chev + '</a>'
     + '<button class="item" data-act="descargar"><span>Descargar mi diario<small>Una copia en un archivo de texto</small></span>' + ICON.chev + '</button>';
@@ -704,7 +694,7 @@ function render(){
     case 'diario': html = pantallaDiario(); break;
     case 'resumen': html = pantallaResumen(partes[1]); break;
     case 'mas': html = pantallaMas(); break;
-    case 'premium': html = pantallaPremium(); break;
+    case 'premium': html = pantallaHoy(); break;
     default: html = pantallaHoy();
   }
   $('#main').innerHTML = html;
@@ -788,7 +778,7 @@ function cerrarSOS(){ clearTimeout(sosT); const o = $('#sos'); o.hidden = true; 
 /* ---------- Primera vez ---------- */
 function onb(paso){
   const o = $('#onb'); o.hidden = false;
-  if (paso === 1) o.innerHTML = '<div class="onb-in"><div class="onb-orbe" aria-hidden="true"></div><h1>Comer con calma</h1><p>Un lugar para entender por qué a veces comés sin hambre, y responderle con calma en lugar de culpa.</p>' + bloqueInstalar() + '<button class="btn ancho" data-act="onb" data-paso="2">Empezar</button></div>';
+  if (paso === 1) o.innerHTML = '<div class="onb-in"><div class="onb-orbe" aria-hidden="true"></div><h1>Comer con calma</h1><p>Un lugar para entender por qué a veces comés sin hambre, y responderle con calma en lugar de culpa.</p>' + bloqueInstalar() + '<button class="btn ancho" data-act="onb" data-paso="3">Empezar</button></div>';
   if (paso === 2) o.innerHTML = '<div class="onb-in"><h1>¿Ya te suscribiste?</h1><p>Si ya pagaste tu suscripción, ingresá el correo con el que compraste y empezás con todo el contenido.</p>'
     + '<div class="campo"><label for="o-email" style="font-weight:600;display:block;margin-bottom:8px">Tu correo</label><input class="inp" id="o-email" type="email" inputmode="email" autocomplete="email" placeholder="nombre@correo.com"></div>'
     + '<button class="btn ancho" data-act="onb-validar">Activar mi suscripción</button><p class="msg" id="o-msg" aria-live="polite"></p>'
